@@ -1,12 +1,13 @@
 import streamlit as st
+from streamlit_extras.colored_header import colored_header
 
-# Initialize session state variables if not present
+# Initialize session state variables
 if 'player_index' not in st.session_state:
     st.session_state.player_index = 0
 if 'coins' not in st.session_state:
-    st.session_state.coins = {'Team A': 100, 'Team B': 100, 'Team C': 100}
+    st.session_state.coins = {'Team A': 100, 'Team B': 100}
 if 'teams' not in st.session_state:
-    st.session_state.teams = {'Team A': [], 'Team B': [], 'Team C': []}
+    st.session_state.teams = {'Team A': [], 'Team B': []}
 if 'current_bid' not in st.session_state:
     st.session_state.current_bid = 0
 if 'current_bidder' not in st.session_state:
@@ -18,28 +19,30 @@ players = [
     "Rohit", "Abhi", "Bilat", "Prashant", "Rohan"
 ]
 
-st.title("🏏 3-Team Player Auction")
+st.set_page_config(page_title="2-Team Auction", layout="centered")
+colored_header("🎯 2-Team Player Auction", description="Bid players with 100 coins each", color_name="blue-green")
 
 # Check if auction is over
 if st.session_state.player_index >= len(players):
-    st.success("Auction completed! Here's the final team distribution:")
+    st.success("🎉 Auction Completed! Final Team Results Below:")
     for team, members in st.session_state.teams.items():
-        st.subheader(team)
-        st.write(", ".join(members) if members else "No players assigned")
+        with st.expander(team):
+            st.markdown(f"**Players**: {', '.join(members) if members else 'No players assigned'}")
     st.stop()
 
 # Current player being auctioned
 current_player = players[st.session_state.player_index]
-st.header(f"Auctioning: {current_player}")
-st.write(f"Current Bid: {st.session_state.current_bid}")
+st.markdown(f"### 👤 Now Auctioning: `{current_player}`")
+st.markdown(f"**💸 Current Bid:** `{st.session_state.current_bid}`")
 if st.session_state.current_bidder:
-    st.write(f"Current Highest Bidder: {st.session_state.current_bidder}")
+    st.markdown(f"**🔝 Highest Bidder:** `{st.session_state.current_bidder}`")
 
-# Bidding buttons for each team
-cols = st.columns(3)
-for i, team in enumerate(['Team A', 'Team B', 'Team C']):
-    with cols[i]:
-        st.write(f"{team} Coins: {st.session_state.coins[team]}")
+# Bidding columns
+col1, col2 = st.columns(2)
+for col, team in zip((col1, col2), ['Team A', 'Team B']):
+    with col:
+        st.markdown(f"#### {team}")
+        st.markdown(f"**🪙 Coins Left:** {st.session_state.coins[team]}")
         if st.button(f"{team} Bid +5", key=team):
             if st.session_state.coins[team] >= st.session_state.current_bid + 5:
                 st.session_state.current_bid += 5
@@ -57,8 +60,11 @@ if st.button("🏁 Finalize Bid"):
     st.session_state.current_bidder = None
     st.experimental_rerun()
 
-# Team Display
+# Team display
 st.divider()
-st.subheader("Team Lineups So Far")
-for team, members in st.session_state.teams.items():
-    st.markdown(f"**{team}**: {', '.join(members) if members else 'No players yet'}")
+st.markdown("### 📊 Live Team Status")
+col1, col2 = st.columns(2)
+for col, team in zip((col1, col2), ['Team A', 'Team B']):
+    with col:
+        st.markdown(f"**{team}**")
+        st.markdown(f"{', '.join(st.session_state.teams[team]) if st.session_state.teams[team] else 'No players yet'}")
